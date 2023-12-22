@@ -1,0 +1,20 @@
+@media (max-width: 800px) {
+  header {
+    background-position: 25% center;
+  }
+  .logo-title {
+    font-size: 1.75rem;
+  }
+  .card {
+    min-width: 100% !important;
+  }
+  .card-body {
+    min-height: 27.5rem;
+  }
+  .quote-author {
+    font-size: 2rem;
+  }
+  .quote-para {
+    font-size: 1.5rem;
+  }
+}
