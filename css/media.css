@@ -11,7 +11,7 @@
   }
 }
 @media (max-width: 575.98px) {
-  .sub-title{
+  .sub-title {
     font-size: 20px;
   }
   .special-div > div:last-child {
@@ -29,16 +29,21 @@
   .form-select {
     width: 100% !important;
   }
-  button{
-    padding: 0px !important;
+  button {
+    padding: 5px !important;
+    font-size: 10px !important;
   }
-  button i{
+  button i {
     display: none !important;
   }
   table {
-    font-size: 12px;
+    font-size: 10px !important;
   }
   table th {
     width: unset !important;
+  }
+  button > a {
+    padding: 5px !important;
+    font-size: 10px;
   }
 }

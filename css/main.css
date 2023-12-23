@@ -149,4 +149,7 @@ table td {
   background-color: transparent !important;
   border: 1px solid #352e28 !important;
 }
+  button > a {
+    padding: 6px 10px !important;
+  }
 /* ====== End Table Section ======= */

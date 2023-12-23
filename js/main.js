@@ -36,13 +36,10 @@ let filterCategory = document.getElementById("filterCategory");
 let updateIndex = -1;
 let deleteIndex = -1;
 
-// Global variable for selected category
-let selectedCategory = "";
-function handleSelectChange(value) {
-  selectedCategory = value;
-}
+// Global variable for filter category
+let filteredCategory;
 
-// Get buttons IDs
+// Get Add & Update buttons IDs
 let addButton = document.getElementById("addBtn");
 let updateButton = document.getElementById("updateBtn");
 
@@ -51,6 +48,11 @@ let sitesList = [];
 // Array to store filtered site objects
 let filteredSites = [];
 
+// Function to go-up when I click on any buuton in the table
+function topFunction() {
+  document.body.scrollTop = 0;
+  document.documentElement.scrollTop = 0;
+}
 // ========================================================== //
 // ======================= Validation ======================= //
 // ========================================================== //
@@ -168,7 +170,7 @@ function validationURL() {
   }
 
   let regexURL =
-    /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
+    /^(?:https?):\/\/(?:[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+)$/i;
 
   if (!regexURL.test(siteUrlInput.value)) {
     addInvalidClass(siteUrlInput);
@@ -210,7 +212,11 @@ addButton.onclick = function () {
 };
 
 function isValidInput() {
-  return validationName() && validationURL() && siteCategory.value !== "Select Category";
+  return (
+    validationName() &&
+    validationURL() &&
+    siteCategory.value !== "Select Category"
+  );
 }
 
 function showValidationError() {
@@ -223,7 +229,7 @@ function addSite() {
   let siteObj = {
     name: siteNameInput.value,
     url: siteUrlInput.value,
-    category: selectedCategory,
+    category: siteCategory.value,
   };
 
   sitesList.push(siteObj);
@@ -247,8 +253,7 @@ function clearForm() {
 // Check if there are stored websites in local storage
 if (localStorage.getItem("websites") != null) {
   sitesList = JSON.parse(localStorage.getItem("websites"));
-  filteredSites = sitesList;
-  displaySites(filteredSites);
+  filterSitesByCategory(filteredCategory);
 }
 
 // Display sites
@@ -261,10 +266,10 @@ function displaySites(list) {
       <td class="text-capitalize">${site.name}</td>
       <td>${site.category}</td>
       <td>
-        <button class="btn btn-success">
+        <button class="btn btn-success p-0" onclick="topFunction()">
           <a href="${
             site.url
-          }" target="_blank" class="text-decoration-none text-light">
+          }" target="_blank" class="text-decoration-none text-light d-block">
             <i class="fa-solid fa-eye pe-2"></i>Visit
           </a>
         </button>
@@ -290,15 +295,12 @@ function displaySites(list) {
 // ========================================================== //
 // ==================== Filter Operation ==================== //
 // ========================================================== //
-let filteredCategory;
 // Filter sites by category
 function filterSitesByCategory(category = "1") {
   filteredCategory = category;
-  filteredSites = [];
   switch (category) {
     case "1":
-      filteredSites = sitesList;
-      displaySites(filteredSites);
+      displaySites(filterSitesByCategoryName("All"));
       break;
     case "2":
       displaySites(filterSitesByCategoryName("AI"));
@@ -327,6 +329,13 @@ function filterSitesByCategory(category = "1") {
   }
 }
 function filterSitesByCategoryName(category) {
+  if (category === "All") {
+    filteredSites = sitesList.map((site, index) => ({
+      ...site,
+      originalIndex: index,
+    }));
+    return filteredSites;
+  }
   filteredSites = sitesList
     .map((site, index) => ({ ...site, originalIndex: index }))
     .filter((site) => site.category === category);
@@ -339,6 +348,7 @@ function deleteSite(index) {
   deleteIndex = filteredSites[index].originalIndex;
   sitesList.splice(deleteIndex, 1);
   updateLocalStorageAndDisplay();
+  topFunction();
 }
 
 function updateLocalStorageAndDisplay() {
@@ -383,6 +393,7 @@ function setData(index) {
   addValidClasses();
   updateButton.classList.remove("d-none");
   addButton.classList.add("d-none");
+  topFunction();
 }
 function isUpdateMode() {
   return updateIndex !== -1;
