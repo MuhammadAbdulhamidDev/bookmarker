@@ -210,7 +210,7 @@ addButton.onclick = function () {
 };
 
 function isValidInput() {
-  return validationName() && validationURL() && selectedCategory;
+  return validationName() && validationURL() && siteCategory.value !== "Select Category";
 }
 
 function showValidationError() {
@@ -228,10 +228,9 @@ function addSite() {
 
   sitesList.push(siteObj);
   localStorage.setItem("websites", JSON.stringify(sitesList));
+  filterSitesByCategory(filteredCategory);
 
   clearForm();
-  filteredSites = sitesList;
-  displaySites(filteredSites);
 }
 
 // Clear input fields
@@ -239,9 +238,8 @@ function clearForm() {
   siteNameInput.value = "";
   siteUrlInput.value = "";
   siteCategory.value = "Select Category";
-  filterCategory.value = "1";
+  filterCategory.value = filteredCategory;
   removeValidClasses();
-  selectedCategory = "";
 }
 // ========================================================== //
 // =================== Display Operation ==================== //
@@ -380,7 +378,7 @@ function setData(index) {
   let currentSite = filteredSites[index];
   siteNameInput.value = currentSite.name;
   siteUrlInput.value = currentSite.url;
-  selectedCategory = currentSite.category;
+  siteCategory.value = currentSite.category;
   removeInvalidClasses();
   addValidClasses();
   updateButton.classList.remove("d-none");
@@ -393,7 +391,7 @@ function updateData() {
   let siteObj = {
     name: siteNameInput.value,
     url: siteUrlInput.value,
-    category: selectedCategory,
+    category: siteCategory.value,
   };
 
   // Update the corresponding item in sitesList
@@ -413,5 +411,6 @@ function updateData() {
 function clearUpdateForm() {
   siteNameInput.value = "";
   siteUrlInput.value = "";
+  siteCategory.value = "Select Category";
   removeValidClasses();
 }
