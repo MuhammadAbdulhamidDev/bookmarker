@@ -126,6 +126,12 @@ form {
 option {
   background-color: #f7ecde;
 }
+.special-div > div:first-child {
+  min-width: calc(100% / 3);
+}
+.special-div > div:last-child {
+  min-width: calc((100% / 3) * 2);
+}
 /* ====== End Form Section ======= */
 /* ===== Start Table Section ===== */
 table th {
