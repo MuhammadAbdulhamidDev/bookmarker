@@ -4,22 +4,19 @@
 // Get elements for box model
 let boxModel = document.querySelector(".box-info");
 let closeBtn = document.getElementById("closeBtn");
-
 //Close Model Function
 function closeBoxModel() {
   boxModel.classList.add("d-none");
+  removeInvalidClasses();
 }
-
 // Close model when close button is clicked
 closeBtn.addEventListener("click", closeBoxModel);
-
 // Close model when the Escape key is pressed
 document.addEventListener("keydown", function (element) {
   if (element.key === "Escape") {
     closeBoxModel();
   }
 });
-
 // Close model when clicking outside the box model
 document.addEventListener("click", function (element) {
   if (element.target.classList.contains("box-info")) {
@@ -33,10 +30,11 @@ document.addEventListener("click", function (element) {
 let siteNameInput = document.getElementById("siteName");
 let siteUrlInput = document.getElementById("siteUrl");
 let siteCategory = document.getElementById("siteCategory");
-// let filteredCategory = document.getElementById("filteredCategory");
+let filterCategory = document.getElementById("filterCategory");
 
-// Global variable for update
+// Global variable for update index and delete index
 let updateIndex = -1;
+let deleteIndex = -1;
 
 // Global variable for selected category
 let selectedCategory = "";
@@ -56,60 +54,170 @@ let filteredSites = [];
 // ========================================================== //
 // ======================= Validation ======================= //
 // ========================================================== //
-function validationName() {
-  let regexName = /^[A-Za-z-\d\s]{4,20}$/;
-  if (!regexName.test(siteNameInput.value)) {
-    siteNameInput.classList.add("is-invalid");
-    siteNameInput.classList.remove("is-valid");
-    return false;
-  } else {
-    siteNameInput.classList.remove("is-invalid");
-    siteNameInput.classList.add("is-valid");
-    return true;
-  }
+function addInvalidClass(element) {
+  element.classList.add("is-invalid");
 }
-function validationURL() {
-  let regexURL =
-    /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
-  if (!regexURL.test(siteUrlInput.value)) {
-    siteUrlInput.classList.add("is-invalid");
-    siteUrlInput.classList.remove("is-valid");
-    return false;
-  } else {
-    siteUrlInput.classList.remove("is-invalid");
-    siteUrlInput.classList.add("is-valid");
-    return true;
-  }
+
+function removeInvalidClass(element) {
+  element.classList.remove("is-invalid");
+}
+
+function addValidClass(element) {
+  element.classList.add("is-valid");
+}
+
+function removeValidClass(element) {
+  element.classList.remove("is-valid");
 }
 function removeValidClasses() {
-  siteNameInput.classList.remove("is-valid");
-  siteUrlInput.classList.remove("is-valid");
+  removeValidClass(siteNameInput);
+  removeValidClass(siteUrlInput);
 }
+
 function addValidClasses() {
-  siteNameInput.classList.add("is-valid");
-  siteUrlInput.classList.add("is-valid");
+  addValidClass(siteNameInput);
+  addValidClass(siteUrlInput);
 }
+
 function addInvalidClasses() {
-  siteNameInput.classList.add("is-invalid");
-  siteUrlInput.classList.add("is-invalid");
+  addInvalidClass(siteNameInput);
+  addInvalidClass(siteUrlInput);
 }
+
 function removeInvalidClasses() {
-  siteNameInput.classList.remove("is-invalid");
-  siteUrlInput.classList.remove("is-invalid");
+  removeInvalidClass(siteNameInput);
+  removeInvalidClass(siteUrlInput);
 }
+
+function isSiteNameExists(name) {
+  let lowerCaseName = name.toLowerCase().trim();
+  let exists = sitesList.some(
+    (site) => site.name.toLowerCase() === lowerCaseName
+  );
+  return exists;
+}
+
+function isSiteURLExists(url) {
+  let lowerCaseURL = url.toLowerCase().trim();
+  let exists = sitesList.some(
+    (site) => site.url.toLowerCase() === lowerCaseURL
+  );
+  return exists;
+}
+
+function hideMessage(messageElement) {
+  messageElement.style.display = "none";
+}
+
+function showMessage(messageElement) {
+  messageElement.style.display = "block";
+}
+
+function enableButtons() {
+  addButton.disabled = false;
+  updateButton.disabled = false;
+}
+
+function disableButtons() {
+  addButton.disabled = true;
+  updateButton.disabled = true;
+}
+
+let existNameMessage = document.getElementById("existName");
+existNameMessage.style.display = "none";
+
+function validationName() {
+  if (!siteNameInput.value) {
+    hideMessage(existNameMessage);
+  }
+
+  let regexName = /^[A-Za-z-\d\s]{4,20}$/;
+
+  if (!regexName.test(siteNameInput.value)) {
+    addInvalidClass(siteNameInput);
+    if (!siteNameInput.value) {
+      removeInvalidClass(siteNameInput);
+      removeValidClass(siteNameInput);
+    }
+    return false;
+  } else {
+    // Check if the name already exists
+    // Skip existence check during update
+    if (!isUpdateMode() && isSiteNameExists(siteNameInput.value)) {
+      addInvalidClass(siteNameInput);
+      removeValidClass(siteNameInput);
+      showMessage(existNameMessage);
+      disableButtons();
+      return false;
+    }
+
+    removeInvalidClass(siteNameInput);
+    addValidClass(siteNameInput);
+    hideMessage(existNameMessage);
+    enableButtons();
+    return true;
+  }
+}
+
+let existURLMessage = document.getElementById("existURL");
+existURLMessage.style.display = "none";
+
+function validationURL() {
+  if (!siteUrlInput.value) {
+    hideMessage(existURLMessage);
+  }
+
+  let regexURL =
+    /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
+
+  if (!regexURL.test(siteUrlInput.value)) {
+    addInvalidClass(siteUrlInput);
+    if (!siteUrlInput.value) {
+      removeInvalidClass(siteUrlInput);
+    }
+    return false;
+  } else {
+    removeInvalidClass(siteUrlInput);
+    addValidClass(siteUrlInput);
+
+    // Check if the URL already exists
+    // Skip existence check during update
+    if (!isUpdateMode() && isSiteURLExists(siteUrlInput.value)) {
+      addInvalidClass(siteUrlInput);
+      removeValidClass(siteUrlInput);
+      showMessage(existURLMessage);
+      disableButtons();
+      return false;
+    }
+    removeInvalidClass(siteUrlInput);
+    addValidClass(siteUrlInput);
+    hideMessage(existURLMessage);
+    enableButtons();
+    return true;
+  }
+}
+
 // ========================================================== //
 // ==================== Create Operation ==================== //
 // ========================================================== //
 // Event listener for add button
 addButton.onclick = function () {
-  if (validationName() && validationURL()) {
+  if (isValidInput()) {
     addSite();
-    removeValidClasses();
   } else {
-    boxModel.classList.remove("d-none");
-    addInvalidClasses();
+    showValidationError();
   }
 };
+
+function isValidInput() {
+  return validationName() && validationURL() && selectedCategory;
+}
+
+function showValidationError() {
+  boxModel.classList.remove("d-none");
+  addInvalidClasses();
+}
+
 // Add site function
 function addSite() {
   let siteObj = {
@@ -125,12 +233,15 @@ function addSite() {
   filteredSites = sitesList;
   displaySites(filteredSites);
 }
+
 // Clear input fields
 function clearForm() {
   siteNameInput.value = "";
   siteUrlInput.value = "";
   siteCategory.value = "Select Category";
-  filteredCategory.value = "1";
+  filterCategory.value = "1";
+  removeValidClasses();
+  selectedCategory = "";
 }
 // ========================================================== //
 // =================== Display Operation ==================== //
@@ -141,45 +252,47 @@ if (localStorage.getItem("websites") != null) {
   filteredSites = sitesList;
   displaySites(filteredSites);
 }
+
 // Display sites
 function displaySites(list) {
-  let length = list.length;
-  let tableBody = "";
+  let tableBody = list
+    .map(
+      (site, index) => `
+    <tr>
+      <td>${index + 1}</td>
+      <td class="text-capitalize">${site.name}</td>
+      <td>${site.category}</td>
+      <td>
+        <button class="btn btn-success">
+          <a href="${
+            site.url
+          }" target="_blank" class="text-decoration-none text-light">
+            <i class="fa-solid fa-eye pe-2"></i>Visit
+          </a>
+        </button>
+      </td>
+      <td>
+        <button class="btn btn-danger" onclick="deleteSite(${index})">
+          <i class="fa-solid fa-trash-can pe-2"></i>Delete
+        </button>
+      </td>
+      <td>
+        <button class="btn btn-warning" onclick="setData(${index})">
+          <i class="fa-solid fa-pen-to-square pe-2"></i>Update
+        </button>
+      </td>
+    </tr>
+  `
+    )
+    .join("");
 
-  for (let i = 0; i < length; i++) {
-    tableBody += `
-      <tr>
-        <td>${i + 1}</td>
-        <td class="text-capitalize">${list[i].name}</td>
-        <td>${list[i].category}</td>
-        <td>
-          <button class="btn btn-success">
-            <a href="${
-              list[i].url
-            }" target="_blank" class="text-decoration-none text-light">
-              <i class="fa-solid fa-eye pe-2"></i>Visit
-            </a>
-          </button>
-        </td>
-        <td>
-          <button class="btn btn-danger" onclick="deleteSite(${i})">
-            <i class="fa-solid fa-trash-can pe-2"></i>Delete
-          </button>
-        </td>
-        <td>
-          <button class="btn btn-warning" onclick="setData(${i})">
-            <i class="fa-solid fa-pen-to-square pe-2"></i>Update
-          </button>
-        </td>
-      </tr>
-    `;
-  }
   document.getElementById("tableBody").innerHTML = tableBody;
 }
+
 // ========================================================== //
 // ==================== Filter Operation ==================== //
 // ========================================================== //
-let filteredCategory = "";
+let filteredCategory;
 // Filter sites by category
 function filterSitesByCategory(category = "1") {
   filteredCategory = category;
@@ -190,119 +303,97 @@ function filterSitesByCategory(category = "1") {
       displaySites(filteredSites);
       break;
     case "2":
-      filterAndDisplaySitesByCategory("AI");
+      displaySites(filterSitesByCategoryName("AI"));
       break;
     case "3":
-      filterAndDisplaySitesByCategory("CS");
+      displaySites(filterSitesByCategoryName("CS"));
       break;
     case "4":
-      filterAndDisplaySitesByCategory("Front-End");
+      displaySites(filterSitesByCategoryName("Front-End"));
       break;
     case "5":
-      filterAndDisplaySitesByCategory("English");
+      displaySites(filterSitesByCategoryName("English"));
       break;
     case "6":
-      filterAndDisplaySitesByCategory("Social Media");
+      displaySites(filterSitesByCategoryName("Social Media"));
       break;
     case "7":
-      filterAndDisplaySitesByCategory("News");
+      displaySites(filterSitesByCategoryName("News"));
       break;
     case "8":
-      filterAndDisplaySitesByCategory("Series & Movies");
+      displaySites(filterSitesByCategoryName("Series & Movies"));
       break;
     case "9":
-      filterAndDisplaySitesByCategory("Others");
+      displaySites(filterSitesByCategoryName("Others"));
       break;
   }
 }
-// function filterAndDisplaySitesByCategory(category) {
-//   filteredSites = sitesList.filter((site) => site.category === category);
-//   displaySites(filteredSites);
-// }
-function filterAndDisplaySitesByCategory(category) {
+function filterSitesByCategoryName(category) {
   filteredSites = sitesList
     .map((site, index) => ({ ...site, originalIndex: index }))
     .filter((site) => site.category === category);
-  displaySites(filteredSites);
+  return filteredSites;
 }
 // ========================================================== //
 // ==================== Delete Operation ==================== //
 // ========================================================== //
 function deleteSite(index) {
-  sitesList.splice(index, 1);
-  localStorage.setItem("websites", JSON.stringify(sitesList));
-  displaySites(sitesList);
+  deleteIndex = filteredSites[index].originalIndex;
+  sitesList.splice(deleteIndex, 1);
+  updateLocalStorageAndDisplay();
 }
+
+function updateLocalStorageAndDisplay() {
+  localStorage.setItem("websites", JSON.stringify(sitesList));
+  filterSitesByCategory(filteredCategory);
+}
+
 // ========================================================== //
 // =================== Search Operation ===================== //
 // ========================================================== //
 function search(term) {
-  let length = filteredSites.length;
-  let searchArr = [];
-  for (let i = 0; i < length; i++) {
-    if (filteredSites[i].name.toLowerCase().includes(term.toLowerCase())) {
-      searchArr.push(filteredSites[i]);
-    }
-  }
+  let searchArr = filteredSites.filter((site) =>
+    site.name.toLowerCase().includes(term.toLowerCase())
+  );
+
   displaySites(searchArr);
+
   if (searchArr.length === 0 && term === "") {
-    displaySites(sitesList);
-    return;
+    filterSitesByCategory(filteredCategory);
   }
 }
+
 // ========================================================== //
 // =================== update Operation ===================== //
 // ========================================================== //
 updateButton.onclick = function () {
-  if (validationName() && validationURL()) {
+  if (isValidInput()) {
     updateData();
     removeValidClasses();
-    console.log(selectedCategory);
+    updateIndex = -1;
   } else {
-    boxModel.classList.remove("d-none");
+    showValidationError();
   }
 };
-// function setData(index) {
-//   updateIndex = index;
-//   let currentSite = filteredSites[index];
-//   siteNameInput.value = currentSite.name;
-//   siteUrlInput.value = currentSite.url;
-//   siteCategory.value = currentSite.category;
-//   removeInvalidClasses();
-//   addValidClasses();
-//   updateButton.classList.remove("d-none");
-//   addButton.classList.add("d-none");
-// }
 function setData(index) {
   updateIndex = filteredSites[index].originalIndex;
   let currentSite = filteredSites[index];
   siteNameInput.value = currentSite.name;
   siteUrlInput.value = currentSite.url;
-  siteCategory.value = currentSite.category;
+  selectedCategory = currentSite.category;
   removeInvalidClasses();
   addValidClasses();
   updateButton.classList.remove("d-none");
   addButton.classList.add("d-none");
 }
-// function updateData() {
-//   let siteObj = {
-//     name: siteNameInput.value,
-//     url: siteUrlInput.value,
-//     category: siteCategory.value,
-//   };
-//   sitesList[updateIndex] = siteObj;
-//   localStorage.setItem("websites", JSON.stringify(sitesList));
-//   filterSitesByCategory(selectedCategory);
-//   clearForm();
-//   displaySites(filteredSites);
-//   updateButton.classList.add("d-none");
-//   addButton.classList.remove("d-none");
-// }
+function isUpdateMode() {
+  return updateIndex !== -1;
+}
 function updateData() {
   let siteObj = {
     name: siteNameInput.value,
     url: siteUrlInput.value,
-    category: siteCategory.value,
+    category: selectedCategory,
   };
 
   // Update the corresponding item in sitesList
@@ -310,14 +401,17 @@ function updateData() {
 
   // Update localStorage
   localStorage.setItem("websites", JSON.stringify(sitesList));
-
-  // Update filteredSites based on the selected category
   filterSitesByCategory(filteredCategory);
 
   // Clear the form and display the updated sites
-  clearForm();
+  clearUpdateForm();
 
   // Hide the update button and show the add button
   updateButton.classList.add("d-none");
   addButton.classList.remove("d-none");
+}
+function clearUpdateForm() {
+  siteNameInput.value = "";
+  siteUrlInput.value = "";
+  removeValidClasses();
 }
